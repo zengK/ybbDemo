@@ -13,27 +13,42 @@
         </div>
       </Col>
       <Col class="header-Right" span="3"offset="13" style="">
-        <Dropdown style="margin-left: 20px">
+        <Dropdown style="margin-left: 20px" @on-click="open2">
           <a href="javascript:void(0)">
            {{name}}
             <Icon type="arrow-down-b"></Icon>
           </a>
           <DropdownMenu slot="list">
-            <DropdownItem>修改登录密码</DropdownItem>
+            <DropdownItem >修改登录密码</DropdownItem>
             <DropdownItem>修改分配密码</DropdownItem>
             <DropdownItem>注销登录</DropdownItem>
           </DropdownMenu>
         </Dropdown>
       </Col>
     </Col>
+    <!--<Button type="primary" @click="modal1 = true">Display dialog box</Button>-->
+    <Modal v-model="modal2" title="修改登录密码" @on-ok="ok" @on-cancel="cancel">
+      <p>Content of ddasadasdasdadialog</p>
+      <p>Content of dialog</p>
+      <p>Content of dialog</p>
+    </Modal>
   </Row>
+  <!--<Button type="primary" @click="modal1 = true">Display dialog box</Button>-->
+  <!--<Modal v-model="modal1" title="修改登录密码" @on-ok="ok" @on-cancel="cancel">-->
+    <!--<p>Content of dialog</p>-->
+    <!--<p>Content of dialog</p>-->
+    <!--<p>Content of dialog</p>-->
+  <!--</Modal>-->
+
 </template>
 <script>
+//  import Modal from './modal.vue'
   export default{
     name:'Header',
     data(){
       return {
-        name:""
+        name:"",
+        modal2: true
       }
     },
     mounted() {
@@ -43,7 +58,15 @@
       })
     },
     methods:{
-
+      open2(name){
+        alert(111111111111)
+      },
+      ok () {
+        this.$Message.info('Clicked ok');
+      },
+      cancel () {
+        this.$Message.info('Clicked cancel');
+      }
     }
   }
 </script>

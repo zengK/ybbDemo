@@ -2,6 +2,13 @@
       <Col class="header" span="17">
         <div class="headermsg">
           可分配余额:<span class="money">{{money}}</span>
+          <Button style="width: 120px; float:right;margin-right: 10px;margin-top: 24px"
+                  @click="modal1 = true"  type="success">增加司机</Button>
+          <Modal v-model="modal1" title="修改登录密码" @on-ok="ok" @on-cancel="cancel">
+            <p>Content of dialog</p>
+            <p>Content of dialog</p>
+            <p>Content of dialog</p>
+          </Modal>
         </div>
         <div class="center">
           <Row>
@@ -52,6 +59,7 @@
     name:'HeaderMag',
     data(){
       return{
+        modal1: false,
         money:'',
         tel:'',
         carNum:'',
@@ -220,6 +228,12 @@
         this.pageNum=page
         this.changeDate(page)
 //        console.log(page)
+      },
+      ok () {
+        this.$Message.info('Clicked ok');
+      },
+      cancel () {
+        this.$Message.info('Clicked cancel');
       },
       changeDate(pageNum){
         var logisticsId = localStorage.getItem('logisticsId')
