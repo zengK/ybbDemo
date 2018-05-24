@@ -2,12 +2,34 @@
       <Col class="header" span="17">
         <div class="headermsg">
           可分配余额:<span class="money">{{money}}</span>
-          <Button style="width: 120px; float:right;margin-right: 10px;margin-top: 24px"
-                  @click="modal1 = true"  type="success">增加司机</Button>
-          <Modal v-model="modal1" title="修改登录密码" @on-ok="ok" @on-cancel="cancel">
-            <p>Content of dialog</p>
-            <p>Content of dialog</p>
-            <p>Content of dialog</p>
+          <Button style="width: 120px; float:right;margin-right: 10px;margin-top: 24px"@click="modal1 = true"  type="success">增加司机</Button>
+          <Modal v-model="modal1" title="增加司机" @on-ok="ok" @on-cancel="cancel">
+            <Form :model="formItem" :label-width="80">
+              <FormItem label="司机姓名:">
+                <Input v-model="formItem.input" placeholder="请输入司机姓名"></Input>
+              </FormItem>
+              <FormItem label="司机手机:">
+                <Input v-model="formItem.input" placeholder="请输入司机手机号"></Input>
+              </FormItem>
+              <FormItem label="司机类型:">
+                <Select v-model="formItem.select">
+                  <Option value="非授信">非授信</Option>
+                  <Option value="授信">授信</Option>
+                </Select>
+              </FormItem>
+              <FormItem label="司机车牌号:">
+                <Input v-model="formItem.input" placeholder="请输入司机手机号"></Input>
+              </FormItem>
+              <FormItem label="分配金额:">
+                <Input v-model="formItem.input" placeholder="请输入司机手机号"></Input>
+              </FormItem>
+              <FormItem label="分配密码:">
+                <Input v-model="formItem.input" placeholder="请输入司机手机号"></Input>
+              </FormItem>
+              <FormItem label="备注:">
+                <Input v-model="formItem.input" placeholder="请输入司机手机号"></Input>
+              </FormItem>
+            </Form>
           </Modal>
         </div>
         <div class="center">
@@ -47,7 +69,7 @@
             <Table border :columns="columns" :data="dataList"></Table>
           </Row>
           <template style="text-align: center">
-            <Page :total="total1" :page-size="1" :page-size-opts="pageSizeOpts" show-elevator show-sizer @on-change="changePage"></Page>
+            <Page :total="total1" :page-size="pageSize" :page-size-opts="pageSizeOpts" @on-page-size-change="changeSize"  show-elevator show-sizer @on-change="changePage"></Page>
           </template>
         </div>
       </Col>
@@ -59,6 +81,10 @@
     name:'HeaderMag',
     data(){
       return{
+        formItem: {
+          input: '',
+          select: '非授信',
+        },
         modal1: false,
         money:'',
         tel:'',
@@ -66,6 +92,8 @@
         siji: '',
         pageSizeOpts:[1,2,3,4],
         pageNum:1,
+        pageSize:0,
+        size:1,
         total1:0,
         types: [
           {
@@ -219,15 +247,17 @@
     },
     mounted() {
       this.$nextTick(function () {
-
-        this.changeDate(this.pageNum)
+        this.changeDate(this.pageNum,this.size)
       })
     },
     methods:{
       changePage(page) {
         this.pageNum=page
-        this.changeDate(page)
-//        console.log(page)
+        this.changeDate(page,this.size)
+      },
+      changeSize(size){
+        this.size=size
+        this.changeDate(this.page,size)
       },
       ok () {
         this.$Message.info('Clicked ok');
@@ -235,11 +265,11 @@
       cancel () {
         this.$Message.info('Clicked cancel');
       },
-      changeDate(pageNum){
+      changeDate(pageNum,size){
         var logisticsId = localStorage.getItem('logisticsId')
         var name = localStorage.getItem('name')
         var pwd = localStorage.getItem('password')
-        var params = {"logisticsId":logisticsId,"pwd":pwd,"loginName":name,"pageNum":pageNum,"pageSize":"1","driverType":"",
+        var params = {"logisticsId":logisticsId,"pwd":pwd,"loginName":name,"pageNum":pageNum,"pageSize":size,"driverType":"",
           "driverName":"","car":"","remark":"","telephone":"","starttime":"","endtime":""};
         params = JSON.stringify(params)
         var data = {
@@ -267,6 +297,7 @@
               }
               this.dataList=response.data.page.result;
               this.total1=response.data.page.total;
+              this.pageSize=response.data.page.pageSize;
               console.log(this.total1)
             }else {
 //

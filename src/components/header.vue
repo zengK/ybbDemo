@@ -28,9 +28,6 @@
     </Col>
     <!--<Button type="primary" @click="modal1 = true">Display dialog box</Button>-->
     <Modal v-model="modal2" title="修改登录密码" @on-ok="ok" @on-cancel="cancel">
-      <p>Content of ddasadasdasdadialog</p>
-      <p>Content of dialog</p>
-      <p>Content of dialog</p>
     </Modal>
   </Row>
   <!--<Button type="primary" @click="modal1 = true">Display dialog box</Button>-->
@@ -48,7 +45,7 @@
     data(){
       return {
         name:"",
-        modal2: true
+        modal2: false
       }
     },
     mounted() {
@@ -59,7 +56,7 @@
     },
     methods:{
       open2(name){
-        alert(111111111111)
+
       },
       ok () {
         this.$Message.info('Clicked ok');
