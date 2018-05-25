@@ -35,7 +35,7 @@
         <div class="center">
           <Row>
             <Col span="6">
-            司机类别:<Select v-model="selects" value="全部" style="width:200px">
+            司机类别:<Select v-model="selects" value=" " style="width:200px">
                         <Option v-for="item in types" :value="item.value" :key="item.value">{{ item.label }}</Option>
                       </Select>
             </Col>
@@ -43,25 +43,25 @@
             司机姓名: <Input  v-model="siji" placeholder="请输入司机姓名" clearable style="width: 200px"></Input>
             </Col>
             <Col span="6">
-              司机手机:<Input v-model="tel" placeholder="请输入司机姓名" clearable style="width: 200px"></Input>
+              司机手机:<Input v-model="tel" placeholder="请输入司机手机号" clearable style="width: 200px"></Input>
             </Col>
             <Col span="6">
-              车牌号:<Input v-model="carNum" placeholder="请输入司机姓名" clearable style="width: 200px"></Input>
+              车牌号:<Input v-model="carNum" placeholder="请输入车牌号" clearable style="width: 200px"></Input>
             </Col>
           </Row>
           <Row style="margin-top: 20px">
             <Col span="6">
-            开始时间:<Input v-model="carNum" placeholder="请输入司机姓名" clearable style="width: 200px"></Input>
+            开始时间:<DatePicker  v-model="starTime" type="datetime" placeholder="请输入开始时间" style="width: 200px"></DatePicker>
             </Col>
             <Col span="6">
-            结束时间:<Input v-model="carNum" placeholder="请输入司机姓名" clearable style="width: 200px"></Input>
+            结束时间:<DatePicker v-model="endTime" type="datetime" placeholder="请输入结束时间" style="width: 200px"></DatePicker>
             </Col>
             <Col span="6">
-            备注查询:<Input v-model="carNum" placeholder="请输入司机姓名" clearable style="width: 200px"></Input>
+            备注查询:<Input v-model="note" placeholder="请输入备注" clearable style="width: 200px"></Input>
             </Col>
             <Col span="6">
-            <Button style="width: 80px" type="success">查询</Button>
-            <Button style="width: 80px" type="error">清空查询</Button>
+            <Button style="width: 80px" @click="queryDate" type="success">查询</Button>
+            <Button style="width: 80px" @click="removeDate" type="error">清空查询</Button>
             <Button type="warning"> <Icon type="share"></Icon>  导出表格</Button>
             </Col>
           </Row>
@@ -69,7 +69,7 @@
             <Table border :columns="columns" :data="dataList"></Table>
           </Row>
           <template style="text-align: center">
-            <Page :total="total1" :page-size="pageSize" :page-size-opts="pageSizeOpts" @on-page-size-change="changeSize"  show-elevator show-sizer @on-change="changePage"></Page>
+            <Page style="text-align: center" :total="total1" :page-size="pageSize" :page-size-opts="pageSizeOpts" @on-page-size-change="changeSize"  show-elevator show-sizer @on-change="changePage"></Page>
           </template>
         </div>
       </Col>
@@ -90,27 +90,30 @@
         tel:'',
         carNum:'',
         siji: '',
+        starTime:'',
+        endTime:'',
+        note:'',
         pageSizeOpts:[1,2,3,4],
         pageNum:1,
-        pageSize:0,
+        pageSize:10,
         size:1,
         total1:0,
         types: [
           {
-            value: '全部',
+            value: ' ',
             label: '全部',
 
           },
           {
-            value: '授信司机',
+            value: '1',
             label: '授信司机'
           },
           {
-            value: '非授信司机',
+            value: '0',
             label: '非授信司机'
           }
         ],
-        selects: '',
+        selects: ' ',
         columns: [
           {
             title: '序号',
@@ -251,6 +254,19 @@
       })
     },
     methods:{
+      queryDate(){
+        this.changeDate(this.pageNum,this.size)
+      },
+      removeDate(){
+        this.selects='';
+        this.siji='';
+        this.tel='';
+        this.carNum='';
+        this.starTime='';
+        this.endTime='';
+        this.note='';
+        this.changeDate(this.pageNum,this.size)
+      },
       changePage(page) {
         this.pageNum=page
         this.changeDate(page,this.size)
@@ -260,17 +276,18 @@
         this.changeDate(this.page,size)
       },
       ok () {
-        this.$Message.info('Clicked ok');
+        this.$Message.info('确认添加');
       },
       cancel () {
-        this.$Message.info('Clicked cancel');
+        this.$Message.info('取消添加');
       },
       changeDate(pageNum,size){
         var logisticsId = localStorage.getItem('logisticsId')
         var name = localStorage.getItem('name')
         var pwd = localStorage.getItem('password')
-        var params = {"logisticsId":logisticsId,"pwd":pwd,"loginName":name,"pageNum":pageNum,"pageSize":size,"driverType":"",
-          "driverName":"","car":"","remark":"","telephone":"","starttime":"","endtime":""};
+
+        var params = {"logisticsId":logisticsId,"pwd":pwd,"loginName":name,"pageNum":pageNum,"pageSize":size,"driverType":this.selects,
+          "driverName":this.siji,"car":this.carNum,"remark":this.note,"telephone":this.tel,"starttime":this.starTime,"endtime":this.endTime};
         params = JSON.stringify(params)
         var data = {
           param:params
@@ -297,7 +314,8 @@
               }
               this.dataList=response.data.page.result;
               this.total1=response.data.page.total;
-              this.pageSize=response.data.page.pageSize;
+//              this.pageNum=response.data.page.pageNum;
+              this.pageSize=response.data.page.total;
               console.log(this.total1)
             }else {
 //
