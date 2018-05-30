@@ -4,30 +4,30 @@
           可分配余额:<span class="money">{{money}}</span>
           <Button style="width: 120px; float:right;margin-right: 10px;margin-top: 24px"@click="modal1 = true"  type="success">增加司机</Button>
           <Modal v-model="modal1" title="增加司机" @on-ok="ok" @on-cancel="cancel">
-            <Form :model="formItem" :label-width="80">
-              <FormItem label="司机姓名:">
-                <Input v-model="formItem.input" placeholder="请输入司机姓名"></Input>
-              </FormItem>
-              <FormItem label="司机手机:">
-                <Input v-model="formItem.input" placeholder="请输入司机手机号"></Input>
-              </FormItem>
-              <FormItem label="司机类型:">
-                <Select v-model="formItem.select">
-                  <Option value="非授信">非授信</Option>
-                  <Option value="授信">授信</Option>
+            <Form ref="formValidate" :model="formValidate" :rules="ruleValidate" :label-width="100">
+                <FormItem label="司机姓名:" prop="name">
+                  <Input v-model="formValidate.name" placeholder="请输入司机姓名"></Input>
+                </FormItem>
+                <FormItem label="司机手机:" prop="tel">
+                  <Input v-model="formValidate.tel"placeholder="请输入司机手机号"></Input>
+                </FormItem>
+              <FormItem label="司机类型" prop="driverType">
+                <Select v-model="formValidate.driverType" placeholder="选择司机类型">
+                  <Option value="1">授信</Option>
+                  <Option value="0">非授信</Option>
                 </Select>
               </FormItem>
-              <FormItem label="司机车牌号:">
-                <Input v-model="formItem.input" placeholder="请输入司机手机号"></Input>
+              <FormItem label="司机车牌号:" prop="carNum">
+                <Input v-model="formValidate.carNum" placeholder="请输入司机车牌号"></Input>
               </FormItem>
-              <FormItem label="分配金额:">
-                <Input v-model="formItem.input" placeholder="请输入司机手机号"></Input>
+              <FormItem label="分配金额:" prop="FPmoney">
+                <Input v-model="formValidate.FPmoney" placeholder="请输入分配金额"></Input>
               </FormItem>
-              <FormItem label="分配密码:">
-                <Input v-model="formItem.input" placeholder="请输入司机手机号"></Input>
+              <FormItem label="分配密码:" prop="FPpassword">
+                <Input type="password" v-model="formValidate.FPpassword" placeholder="请输入分配密码"></Input>
               </FormItem>
-              <FormItem label="备注:">
-                <Input v-model="formItem.input" placeholder="请输入司机手机号"></Input>
+              <FormItem label="备注:" prop="note">
+                <Input v-model="formValidate.note" placeholder="请输入备注"></Input>
               </FormItem>
             </Form>
           </Modal>
@@ -62,7 +62,7 @@
             <Col span="6">
             <Button style="width: 80px" @click="queryDate" type="success">查询</Button>
             <Button style="width: 80px" @click="removeDate" type="error">清空查询</Button>
-            <Button type="warning"> <Icon type="share"></Icon>  导出表格</Button>
+            <Button type="warning" @click="exportDate"> <Icon type="share"></Icon>  导出表格</Button>
             </Col>
           </Row>
           <Row style="height:500px;margin-top: 30px">
@@ -75,6 +75,7 @@
       </Col>
 </template>
 <script>
+  import md5 from 'js-md5'
   import QS from 'qs'
   import axios from 'axios'
   export default {
@@ -84,6 +85,33 @@
         formItem: {
           input: '',
           select: '非授信',
+        },
+        formValidate: {
+          name: '',
+          tel: '',
+          driverType:'1',
+          carNum:'',
+          FPmoney:'',
+          FPpassword:'',
+          note:''
+
+        },
+        ruleValidate: {
+          name: [
+            { required: true, message: '输入司机姓名不能为空', trigger: 'blur' }
+          ],
+          tel: [
+            { required: true, message: '输入司机手机号不能为空', trigger: 'blur' }
+          ],
+          driverType: [
+            { required: true, message: '请选择司机类型', trigger: 'change' }
+          ],
+          carNum:[
+            { required: true, message: '请输入司机车牌号', trigger: 'blur' }
+          ],
+          FPpassword:[
+            { required: true, message: '请输入密码', trigger: 'blur' }
+          ]
         },
         modal1: false,
         money:'',
@@ -257,6 +285,9 @@
       queryDate(){
         this.changeDate(this.pageNum,this.size)
       },
+      exportDate(){
+        this.getQueryDriverOut(this.pageNum,this.size);
+      },
       removeDate(){
         this.selects='';
         this.siji='';
@@ -276,7 +307,8 @@
         this.changeDate(this.page,size)
       },
       ok () {
-        this.$Message.info('确认添加');
+        this.modal1=false;
+        this.addsiji();
       },
       cancel () {
         this.$Message.info('取消添加');
@@ -285,7 +317,6 @@
         var logisticsId = localStorage.getItem('logisticsId')
         var name = localStorage.getItem('name')
         var pwd = localStorage.getItem('password')
-
         var params = {"logisticsId":logisticsId,"pwd":pwd,"loginName":name,"pageNum":pageNum,"pageSize":size,"driverType":this.selects,
           "driverName":this.siji,"car":this.carNum,"remark":this.note,"telephone":this.tel,"starttime":this.starTime,"endtime":this.endTime};
         params = JSON.stringify(params)
@@ -303,7 +334,6 @@
           .then((response)=>{
             if(response.data.errorcode==0){
               this.money=response.data.usableMoney;
-              console.log(response.data)
               var results=response.data.page.result;
               for (var item in results){
                 if( results[item].driverType==0 ){
@@ -314,13 +344,94 @@
               }
               this.dataList=response.data.page.result;
               this.total1=response.data.page.total;
-//              this.pageNum=response.data.page.pageNum;
               this.pageSize=response.data.page.total;
               console.log(this.total1)
             }else {
 //
             }
+          })
+          .catch(function(error){
 
+            console.log(error);
+          });
+      },
+      getQueryDriverOut(pageNum,size){
+        var logisticsId = localStorage.getItem('logisticsId')
+        var name = localStorage.getItem('name')
+        var pwd = localStorage.getItem('password')
+        var params = {"logisticsId":logisticsId,"pwd":pwd,"loginName":name,"pageNum":pageNum,"pageSize":size,"driverType":this.selects,
+          "driverName":this.siji,"car":this.carNum,"remark":this.note,"telephone":this.tel,"starttime":this.starTime,"endtime":this.endTime};
+        params = JSON.stringify(params)
+        var data = {
+          param:params
+        }
+        data = QS.stringify(data)
+        axios({
+          method: 'post',
+          url: 'https://dev.yobangbang.com/ybbweb/driverServer/getQueryDriverOut.do',
+          data: data,
+          header:{"Content-Type":"application/x-www-form-urlencoded"}
+        })
+          .then((response)=>{
+            if(response.data.errorcode==0){
+              var excleUrl=response.data.url;
+              window.location.href= encodeURI(excleUrl) ;
+            }else {
+//
+            }
+          })
+          .catch(function(error){
+            console.log(error);
+          });
+      },
+      addsiji(){
+        var logisticsId = localStorage.getItem('logisticsId')
+        var name = localStorage.getItem('name')
+        var pwd = localStorage.getItem('password')
+
+        var password=this.formValidate.FPpassword;
+        var hash1= md5(password);
+
+        var params = {
+          "logisticsId":logisticsId,
+          "pwd":pwd,
+          "loginName":name,
+          "driverType":this.formValidate.driverType,
+          "money":this.formValidate.FPmoney,
+          "password":hash1,
+          "driverName":this.formValidate.name,
+          "car":this.formValidate.carNum,
+          "remark":this.formValidate.note,
+          "telephone":this.formValidate.tel
+        };
+        params = JSON.stringify(params)
+        var data = {
+          param:params
+        }
+        data = QS.stringify(data)
+        axios({
+          method: 'post',
+          url: 'https://dev.yobangbang.com/ybbweb/driverServer/addDriver.do',
+          data: data,
+          header:{"Content-Type":"application/x-www-form-urlencoded"}
+        })
+          .then((response)=>{
+            if(response.data.errorcode==0){
+              this.modal1=false;
+              this.changeDate(this.pageNum,this.size)
+            }else {
+              this.$Message.error(response.data.msg);
+//              alert(response.data.msg);
+                this.modal1=true;
+                this.formValidate.FPpassword=''
+                this.formValidate.driverType='1'
+                this.formValidate.FPmoney=''
+                this.formValidate.name=''
+                this.formValidate.carNum=''
+                this.formValidate.note=''
+                this.formValidate.tel=''
+              return false
+            }
           })
           .catch(function(error){
 
